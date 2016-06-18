@@ -1,0 +1,709 @@
+#!/bin/bash
+clear
+$Tag
+$IDprocesso
+$Valor
+$OP
+$NomeProc
+$Val;
+$ins;
+ins=0;
+$NomeUsu
+$NumMaxUsu
+$IDUsu
+IDUsu=1000;
+Espaco=" "
+$NomeUsuario
+$NumeroID
+$LinhaDoID
+$PID
+$Sair
+MenuPausarCont() #======== Menu de Pausar Continuar ========
+{
+echo "--------------------------------------------"
+echo "1 - Pausar"
+echo "2 - Continuar"
+echo "3 - Pesquisar Processo"
+echo "4 - Voltar"
+read OP
+case $OP in
+	1)echo "--------------------- Pausar -----------------------"
+	echo "Digite o ID do processo (PID): "
+        read PID
+        ps -Ao pid,fname | grep $PID
+if [ $? -gt 0 ]
+then
+        echo "Não existe o processo digitado"
+        sleep 2
+        MenuPausarCont
+else
+        if [ $USER == "root" ]
+then
+	kill -STOP $PID
+	echo "Processo Pausado"
+	sleep 3
+        MenuPausarCont
+else
+	echo "Não possui esse nivel de previlegio"
+	sleep 2
+	MenuPausarCont
+fi
+fi;;
+	2)echo "------------------- Continuar ---------------------"
+	echo "Digite o ID do processo (PID): "
+        read PID
+        ps -Ao pid,fname | grep $PID
+if [ $? -gt 0 ]
+then
+        echo "Não existe o processo digitado"
+        sleep 2
+        MenuPausarCont
+else
+        if [ $USER == "root" ]
+then
+	kill -CONT $PID
+        echo "Processo em funcionamento"
+	sleep 3
+        MenuPausarCont
+else
+	echo "Não possui esse nivel de previlegio"
+	sleep 2
+	MenuPausarCont
+fi
+fi;;
+	3)echo "------------------- Pesquisa ---------------------"
+	echo "Digite o Nome do Processo: "
+	read NomeProc
+	ps -Ao user,pid,stat,comm,time | grep -q $NomeProc
+	if [ $? -gt 0 ]
+then
+	echo "O processo digitado não existe"
+	MenuPausarCont
+else
+	ps -Ao user,pid,stat,comm,time | head -n1
+	ps -Ao user,pid,stat,comm,time | grep $NomeProc
+	MenuPausarCont
+fi;;
+	4)MenuPrincipalPC;;
+	*)echo -e "Opção Invalida" && sleep 2; MenuPausarCont;;
+esac
+}
+AjudaPC() #======== Função de Ajuda do Pausar Continuar ========
+{
+clear
+	echo "---------------- Pausar/Continuar ------------------"
+	echo " "
+	echo " 1 - ***** Pausa *****"
+	echo "	Digite o ID do processo para que o mesmo possa ser"
+        echo "congelado."
+        echo "  "
+	echo " 2 - ***** Continua *****"
+	echo "	Digite o ID do processo para que o mesmo possa voltar"
+        echo "em execução"
+        echo "  "
+        echo "----------------------------------------------------"
+read -p  "***** Digite ENTER para Voltar ao Menu Principal *****"
+}
+MenuPrincipalPC() #======== Menu Principal de Pausar Continuar ========
+{
+while [ "$sair" -eq 0 ]; do
+clear
+echo "--------------------------------------------"
+echo "1 - Pausar/Continuar"
+echo "2 - Ajuda"
+echo "3 - Voltar para o Menu"
+read OP
+case $OP in
+	1)MenuPausarCont;;
+	2)AjudaPC;;
+	3)MenuGerenciamentoProcessos;;
+	*)echo -e "Opção Invalida" && sleep 2; MenuPrincipalPC;;
+esac
+done
+}
+FunThreadsPs() #======== Função de Threads (PS) ========
+{
+	clear
+	echo "Digite o ID do processo (PID): "
+        read PID
+        ps -Ao pid,fname | grep $PID
+if [ $? -gt 0 ]
+then
+        echo "Não existe o processo digitado"
+        sleep 2
+       MenuDeEscolhaElf
+else
+
+        ps -T -p $PID
+        MenuDeEscolhaElf
+fi
+}
+FunThreadsTree() #======== Função de Threads (PSTREE) ========
+{
+	clear
+	echo "Digite o ID do processo (PID): "
+	read PID
+	ps -Ao pid,fname | grep $PID
+if [ $? -gt 0 ]
+then
+        echo "Não existe o processo digitado"
+        sleep 2
+        MenuDeEscolhaPSTREE
+else
+
+	pstree -p -h $PID
+	MenuDeEscolhaPSTREE
+fi
+}
+MenuDeEscolhaElf() #======== Menu De Threads (PS) ========
+{
+	echo "--------------------- Convencional -----------------------"
+	echo "1 - Processo Especifico"
+	echo "2 - Todos os Processos"
+	echo "3 - Voltar"
+	read OP
+case $OP in
+	1)FunThreadsPs;;
+	2)ps -eLf
+	sleep 2;
+	MenuDeEscolhaElf;;
+	3)MenuThreads;;
+	*) echo -e "Opção Inválida" ;sleep 2 && MenuDeEscolhaElf;
+esac
+
+}
+MenuDeEscolhaPSTREE() #======== Menu De Threads (PSTREE) ========
+{
+echo "--------------------- PsTree -----------------------"
+echo "1 - Processo Especifico"
+echo "2 - Todos os Processos"
+echo "3 - Voltar"
+read OP
+case $OP in
+	1)FunThreadsTree;;
+	2)pstree
+	sleep 2;
+	MenuDeEscolhaPSTREE;;
+	3)MenuThreads;;
+	*) echo -e "Opção Inválida" ;sleep 2 && MenuDeEscolhaPSTREE;
+esac
+}
+AjudaThreads() #======== Menu De Ajuda Threads ========
+{
+clear
+	echo "--------------------- PsTree -----------------------"
+	echo " "
+	echo " 1 - Visualizar arvore de dependencia de um processo"
+	echo "expecifico, digitando seu PID;"
+	echo " 2 - Visualizar todas as dependencias do sistema."
+	echo " "
+	echo "------------------ Convencional --------------------"
+	echo " "
+	echo " 1 - Visualizar as Threads de um processo expecifico"
+	echo "digitando seu PID;"
+	echo " 2 - Visualizar todas as Threads do sistema."
+	echo " "
+read -p  "***** Digite ENTER para Voltar ao Menu Principal *****"
+}
+MenuThreads() #======== Menu De Threads ========
+{
+while [ "$sair" -eq 0 ]; do
+clear
+echo "--------------------------------------------"
+echo "1 - Visualizar a arvore de Threads (pstree)"
+echo "2 - Visualizar a arvore de Threads"
+echo "3 - Ajuda"
+echo "4 - Voltar"
+read OP
+case $OP in
+	1)MenuDeEscolhaPSTREE;;
+	2)MenuDeEscolhaElf;;
+	3)AjudaThreads;;
+	4)MenuGerenciamentoProcessos;;
+	*) echo -e "Opção Inválida" ;sleep 2 && MenuThreads;
+esac
+done
+}
+MatarProcesso() #======== Função Matar Processo ========
+{
+echo "Digite o ID do processo[PID]: "
+read IDprocesso
+#ps -p $IDprocesso -o comm=
+ps -Ao pid,fname | grep $IDprocesso
+if [ $? -gt 0 ]
+then
+	echo "Não existe o processo digitado"
+else
+	if [ $USER == "root" ]
+then
+	`kill -15 $IDprocesso`
+        sleep 1
+        MenuMatarProcesso
+else
+	echo "Não possui esse nivel de previlegio"
+	sleep 2
+	MenuMatarProcesso
+fi
+fi
+}
+MenuMatarProcesso() #======== Menu Matar Processo ========
+{
+while [ "$sair" -eq 0 ]; do
+	echo "1 - Matar Processo | 2 - Voltar"
+	read OP
+	case $OP in
+	1)MatarProcesso;;
+	2)MenuGerenciamentoProcessos;;
+	*) echo -e "Opção Inválida" && sleep 2; MenuMatarProcesso;;
+esac
+done
+}
+AjudaPrioridade() #======== Função Da Prioridade ========
+{
+clear
+	echo "======================== Menu de Ajuda ========================="
+	echo "                                                                "
+	echo "1 - ***** Mudar Valor de Prioridade *****"
+	echo "    Processos em tempo real, para ativar o menu digite Ctrl-C ou"
+	echo "'Q', escolha a opção, digite o ID do processo e escolha o valor"
+	echo "da prioridade,"
+	echo "                                                           "
+	echo "2 - ***** Iniciar Processo com Prioridade Desejada *****"
+	echo "    Digite o nome da aplicação que deseja e em seguida escolha "
+	echo "o valor de sua prioridade.  "
+	echo "                                                                "
+	echo "================================================================"
+	read -p  "      ***** Digite ENTER para Voltar ao Menu Principal *****"
+}
+PrioridadeProcessosEstTag() #======== Função Da Prioridade ========
+{
+	echo "Digite a tag de pesquisa: "
+        read Tag
+        `ps -Ao pid,user,ni,pcpu,pmem,vsz,rss,tty,stat,start,time,comm | grep -q $Tag`
+if [ $? -gt 0 ]
+then
+	echo "Não foi encontrado nada"
+	sleep 1
+	PrioridadeProcessosEstTag
+else
+	clear
+	ps -Ao pid,user,ni,pcpu,pmem,vsz,rss,tty,stat,start,time,comm | head -n1
+        ps -Ao pid,user,ni,pcpu,pmem,vsz,rss,tty,stat,start,time,comm | grep $Tag
+fi
+        echo "[ 1 - Mudar Prioridade | 2 - Procurar Aplicação | 3 - Voltar ]"
+	read OP
+	case $OP in
+	1)echo "Digite o ID do processo(PID): "
+	read IDprocesso
+	ps -Ao pid,fname | grep $IDprocesso
+	if [ $? -gt 0 ]
+then
+	echo "Não existe o processo digitado"
+        sleep 2
+        PrioridadeProcessosEstTag
+else
+	echo "Digite o valor da prioridade [-20(Max)...19(Min)]: "
+        read Valor
+        while [ $Valor -lt -20 ] || [ $Valor -gt 19 ];do
+        echo "Digite o valor que esteja entre -20 e 19"
+        read Valor
+done
+        if [ $USER == "root" ]
+then
+	renice $Valor -p $IDprocesso
+        sleep 3
+        clear
+        PrioridadeProcessosEst
+else
+	echo "Não possui esse nivel de previlegio"
+	sleep 2
+	PrioridadeProcessosEst
+fi
+fi;;
+	2)PrioridadeProcessosEstTag;;
+	3)EscolhaDeProcessos;;
+	*)echo -e "Opção Inválida" && sleep 2 ;PrioridadeProcessosEst;;
+esac
+}
+PrioridadeProcessosEst() #======== Função Da Prioridade ========
+{
+ps -Ao pid,user,ni,pcpu,pmem,vsz,rss,tty,stat,start,time,comm
+echo "[ 1 - Mudar Prioridade | 2 - Procurar por Tag | 3 - Voltar ]"
+read OP
+case $OP in
+	1)echo "Digite o ID do processo(PID): "
+	read IDprocesso
+	ps -Ao pid,fname | grep $IDprocesso
+	if [ $? -gt 0 ]
+then
+	echo "Não existe o processo digitado"
+        sleep 2
+        PrioridadeProcessosEst
+else
+	echo "Digite o valor da prioridade [-20(Max)...19(Min)]: "
+        read Valor
+        while [ $Valor -lt -20 ] || [ $Valor -gt 19 ];do
+        echo "Digite o valor que esteja entre -20 e 19"
+        read Valor
+done
+        if [ $USER == "root" ]
+then
+	renice $Valor -p $IDprocesso
+        sleep 3
+        clear
+        PrioridadeProcessosEst
+else
+	echo "Não Possui esse nivel de previlegio"
+	sleep 2
+	PrioridadeProcessosEst
+fi
+fi;;
+	2) PrioridadeProcessosEstTag;;
+	3) EscolhaDeProcessos;;
+	*) echo -e "Opção Inválida" && sleep 2 ;PrioridadeProcessosEst;;
+esac
+}
+EscolhaDeProcessos() #======== Função Da Prioridade ========
+{
+clear
+echo "1 - Lista em Tempo Real"
+echo "2 - Lista Estatica"
+echo "3 - Voltar"
+read OP
+case $OP in
+	1)PrioridadeProcesso;;
+	2)PrioridadeProcessosEst;;
+	3)MenuPrioridades;;
+	*)echo -e "Opção Inválida" && sleep 2 ;EscolhaDeProcessos;;
+esac
+}
+IniciarProcesso() #======== Função Da Prioridade ========
+{
+	clear
+	echo "Digite o nome da aplicação: "
+	read NomeProc
+dpkg -l | grep $NomeProc > /dev/null
+if [ $? -gt 0 ]
+then
+	echo "Essa aplicação não esta instalada"
+	sleep 2 && clear
+	MenuPrioridades
+else
+	echo "Digite o valor da prioridade [-20(Max)...19(Min)]: "
+	read Valor
+	while [ $Valor -lt -20 ] || [ $Valor -gt 19 ];do
+	echo "Digite o valor que esteja entre -20 e 19"
+        read Valor
+done
+	nice -n $Valor $NomeProc &
+	sleep 2
+	clear
+	#cancel
+	MenuPrioridades
+fi
+
+}
+PrioridadeProcesso() #======== Função Da Prioridade ========
+{
+top
+cancel
+echo "[1 - Mudar Prioridade | 2 - Voltar ]"
+read OP
+case $OP in
+	1)
+echo "Digite o ID do processo[PID]: "
+read IDprocesso
+ps -Ao pid,fname | grep $IDprocesso
+if [ $? -gt 0 ]
+then
+	echo "Não existe o processo digitado"
+	sleep 2
+	PrioridadeProcesso
+else
+	echo "Digite o valor da prioridade [-20(Max)...19(Min)]: "
+	read Valor
+	while [ $Valor -lt -20 ] || [ $Valor -gt 19 ];do
+	echo "Digite o valor que esteja entre -20 e 19"
+	read Valor
+done
+	if [ $USER == "root" ]
+then
+	renice $Valor -p $IDprocesso
+	sleep 3
+	clear
+	PrioridadeProcesso
+else
+	echo "Não possui esse nivel de previlegio"
+	sleep 2
+	PrioridadeProcesso
+fi
+fi;;
+	2)clear && EscolhaDeProcessos;;
+	#*)echo -e "Opção Inválida" && ins=0 ;sleep 2;;
+	*)echo -e "Opção Inválida" && sleep 2 ;PrioridadeProcesso;;
+esac
+}
+MenuPrioridades() #========Menu principal do Prioridades========
+{
+while [ "$sair" -eq 0 ]; do
+clear
+	echo "1 - Mudar Valor de Prioridade"
+	echo "2 - Iniciar Processo com Prioridade desejada"
+	echo "3 - Ajuda"
+	echo "4 - Sair"
+	read OP
+	case $OP in
+	1)EscolhaDeProcessos;;
+	2)IniciarProcesso;;
+	3)AjudaPrioridade;;
+	4)MenuGerenciamentoProcessos;;
+	*) echo -e "Opção Inválida" && sleep 2 ;;
+esac
+done
+}
+UsuarioEspecificoNome() #======== Função Do Usuario Especifico ========
+{
+echo "Digite o nome do usuario: "
+read NomeUsu
+getent passwd | cut -f1 -d: | grep -q $NomeUsu
+if [ $? -gt 0 ]
+then
+	echo "Não existe o usuario digitado"
+	clear
+else
+	NomeUsu+=$Espaco
+	clear
+	ps aux | head -n1
+	ps aux | grep $NomeUsu
+fi
+}
+UsuarioEspecificoID() #======== Função Do Usuario Especifico ========
+{
+	echo "Digite o ID do Usuario: "
+	read NumeroID
+	getent passwd | cut -f3 -d: | grep -q $NumeroID
+if [ $? -gt 0 ]
+then
+	echo "Não existe o usuario digitado"
+	sleep 2
+	clear
+else
+	NomeUsuario=$( cat /etc/passwd | grep -n $NumeroID | cut -f1,2,4 -d: | grep $NumeroID | cut -f2 -d: )
+	NomeUsuario+=$Espaco
+	clear
+        ps aux | head -n1
+        ps aux | grep $NomeUsuario
+fi
+}
+MenuUsuarioEspecifico() #======== Menu Do Usuario Especifico ========
+{
+while [ "$sair" -eq 0 ]; do
+	echo "                            "
+	echo "Como deseja fazer a procura?"
+	echo "1 - Nome do Usuario"
+	echo "2 - ID do Usuario"
+	echo "3 - Sair"
+	read OP
+	case $OP in
+	1)UsuarioEspecificoNome;;
+	2)UsuarioEspecificoID;;
+	3)MenuGerenciamentoProcessos;;
+	*) echo -e "Opção Inválida" && sleep 5; MenuUsuarioEspecifico;
+esac
+done
+}
+TodosOsUsuarios() #======== Processo De Todos Os Usuarios =======
+{
+IDUsu=1000;
+clear
+if [ $USER == "root" ]
+then
+NumMaxUsu=$( cat /etc/passwd | tail -n2 | head -n1 | cut -f3 -d: )
+#NumMaxUsu=$( cat /etc/passwd | cut -f1,3 -d: | tail -n1 | cut -f2 -d: )
+while [ $IDUsu -le $NumMaxUsu ];
+do
+NomeUsu=$( cat /etc/passwd | cut -f1,3 -d: | grep $IDUsu | cut -f1 -d: )
+ps -Ao user,pid,pcpu,pmem,vsz,rss,tty,stat,start,time,comm | grep $NomeUsu
+let IDUsu=IDUsu+1
+done
+echo "[ 1 - Atualizar lista | 2 - Voltar ]"
+read OP
+case $OP in
+	1)TodosOsUsuarios;;
+	2)MenuGerenciamentoProcessos;;
+	*)echo -e "Opção Inválida" && sleep 2 ;TodosOsUsuarios;;
+esac
+else
+	echo "Você não possui esse nivel de Previlegio"
+	sleep 3
+	MenuGerenciamentoProcessos
+fi
+}
+MenuGerenciamentoProcessos() ##======== Menu Gerenciamento de Processos =======
+{
+clear
+echo " -----------------------------------------------------------------"
+echo " |                FATEC SÃO CAETANO DO SUL                       |"
+echo " |                                                               |"
+echo " |                Gerenciamento de Processos                     |"
+echo " |                                                               |"
+echo " |                                                               |"
+echo " |   1) Verificar Processos de Todos os Usuarios                 |"
+echo " |   2) Verificar Processos de Usuarios Especificos              |"
+echo " |   3) Verificar Prioridades de Processos                       |"
+echo " |   4) Matar Processo Desejado                                  |"
+echo " |   5) Verificar as Threads                                     |"
+echo " |   6) Pausar ou Continuar Processos                            |"
+echo " |   7) Sair                                                     |"
+echo " |                                                               |"
+echo " -----------------------------------------------------------------"
+read OP
+case $OP in
+	1)TodosOsUsuarios;;
+	2)MenuUsuarioEspecifico;;
+	3)MenuPrioridades;;
+	4)MenuMatarProcesso;;
+	5)MenuThreads;;
+	6)MenuPrincipalPC;;
+	7)MenuPrincipal;;
+	*)echo -e "Opção Inválida" ;sleep 2 && MenuGerenciamentoProcessos;;
+esac
+}
+VerificacaoNMON() #======== NMON =======
+{
+ins=0;
+dpkg -l | grep nmon > /dev/null
+if [ $? -gt 0 ]
+then
+while [ $ins -le 0 ] || [ $ins -gt 2 ]; do
+        echo "NMON não instalado, favor instalar (Necessaria Conexão com a Internet)"
+        echo "Deseja instalar? [1 - SIM / 2 - NÃO]"
+        read ins
+        case $ins in
+        1) sudo apt-get install nmon && clear && MenuPrincipalNMON;;
+        2) MenuPrincipal;;
+        *) echo -e "Opção Inválida" && ins=0 ;sleep 2;clear;
+        esac
+done
+else
+MenuPrincipalNMON
+fi
+}
+MenuPrincipalNMON() #======== NMON =======
+{
+clear
+echo " -----------------------------------------------------------------"
+echo " |                FATEC SÃO CAETANO DO SUL                       |"
+echo " |                                                               |"
+echo " |                          Script NMON                          |"
+echo " |                                                               |"
+echo " |          Digite Q ou Ctrl-C para voltar nesse Menu            |"
+echo " |                                                               |"
+echo " |   1) Verificar a CPU                                          |"
+echo " |   2) Verificar o Disco                                        |"
+echo " |   3) Verificar a Memoria                                      |"
+echo " |   4) Verificar informações da Maquina                         |"
+echo " |   5) Verificar detalhes do Kernel                             |"
+echo " |   6) Verificar a Rede                                         |"
+echo " |   7) Verificar o Sistema de Arquivos                          |"
+echo " |   8) Verificar os Processos                                   |"
+echo " |   9) Uso da CPU em Grafico                                    |"
+echo " |   10) Verificar a Memoria Virtual                             |"
+echo " |   11) Ajuda                                                   |"
+echo " |   12) Voltar                                                  |"
+echo " |                                                               |"
+echo " -----------------------------------------------------------------"
+#echo   " "
+read OP
+	case $OP in
+	1) export NMON=c; nmon && MenuPrincipalNMON;;
+	2) export NMON=d; nmon && MenuPrincipalNMON;;
+	3) export NMON=m; nmon && MenuPrincipalNMON;;
+	4) export NMON=r; nmon && MenuPrincipalNMON;;
+	5) export NMON=k; nmon && MenuPrincipalNMON;;
+	6) export NMON=n; nmon && MenuPrincipalNMON;;
+	7) export NMON=j; nmon && MenuPrincipalNMON;;
+	8) export NMON=t; nmon && MenuPrincipalNMON;;
+	9) export NMON=l; nmon && MenuPrincipalNMON;;
+	10) export NMON=V; nmon && MenuPrincipalNMON;;
+	11) AjudaNMON && MenuPrincipalNMON;;
+	12) MenuPrincipal;;
+	#13) export NMON=-; nmon;;
+	#14) export NMON=+; nmon;;
+	*) echo -e "Opção Inválida" ;sleep 2 && MenuPrincipalNMON;
+   esac
+}
+function AjudaNMON() #===================== Função: Menu de Ajuda
+{
+clear
+	echo "============================== Menu de Ajuda =============================="
+	echo "                                                       "
+        echo "                                                       "
+	echo " 1 - Tela de informações sobre o Processamento usado;"
+        echo " 2 - Tela de informações sobre o Disco Rigido;"
+        echo " 3 - Tela de informações sobre a Memoria Principal (RAM);"
+        echo " 4 - Tela de informações sobre a Maquina (SO, Versão, etc.);"
+        echo " 5 - Tela de informações sobre o Kernel usado;"
+        echo " 6 - Tela de informações sobre a Trafego de Rede;"
+        echo " 7 - Tela de informações sobre as Partições (Filesystems);"
+        echo " 8 - Tela de informações sobre os Processos (Tempo Real);"
+        echo " 9 - Tela de informações sobre o uso de Processamento (Grafico);"
+        echo " 10 - Tela de informações sobre a Memoria Virtual;"
+        echo "                                                       "
+        echo "                                                       "
+        echo "==========================================================================="
+	read -p  "      ***** Digite ENTER para Voltar ao Menu Principal *****"
+}
+#=======================================================================
+MenuPrincipal() ##======== Menu Principal Do Script =======
+{
+while [ "$sair" -eq 0 ]; do
+clear
+echo " -----------------------------------------------------------------"
+echo " |                    FATEC SÃO CAETANO DO SUL                   |"
+echo " |                                                               |"
+echo " |            Sistemas Operacionais - G07-N2/3-1S16              |"
+echo " |                                                               |"
+echo " |                                                               |"
+echo " |   1) NMON                                                     |"
+echo " |   2) Gerenciador de Processos                                 |"
+echo " |   3) Ajuda                                                    |"
+echo " |   4) Sair                                                     |"
+echo " |                                                               |"
+echo " -----------------------------------------------------------------"
+echo " "
+	read OP
+	case $OP in
+	1)VerificacaoNMON;;
+	2)MenuGerenciamentoProcessos;;
+	3)AjudaMenuPrincipal;;
+	4)sair;;
+	*) echo -e "Opção Inválida" && sleep 2 ;;
+esac
+done
+}
+AjudaMenuPrincipal()
+{
+clear
+	echo "======================== Menu de Ajuda ========================="
+	echo "                                                                "
+	echo "1 - ***** NMON *****"
+	echo "    Acessa o Menu do NMON e pode executar suas funções (Caso não"
+	echo "tenha o NMON instalado, ira aparecer a opção de baixar).        "
+        echo "                                                                "
+	echo "2 - ***** Gerenciador de Processos *****"
+	echo "    Acessa o Menu de Gerenciador de Processos que possui uma "
+	echo "variedade de opções para facilitar todo o gerenciamento do mesmo."
+	echo "                                                                "
+	echo "================================================================"
+	read -p  "      ***** Digite ENTER para Voltar ao Menu Principal *****"
+}
+function sair()
+{
+	sair=1;
+	echo "Script Finalizado";
+	exit;
+}
+	clear
+	sair=0
+	MenuPrincipal
